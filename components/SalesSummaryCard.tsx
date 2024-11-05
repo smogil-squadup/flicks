@@ -9,6 +9,13 @@ import {
   CardContent,
 } from "@/components/ui/card";
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
   Table,
   TableBody,
   TableCell,
@@ -19,6 +26,7 @@ import {
 import { createClient } from "@supabase/supabase-js";
 import { Skeleton } from "@/components/ui/skeleton";
 import { BorderBeam } from "@/components/ui/border-beam";
+import { format, parseISO } from "date-fns";
 
 interface SalesSummary {
   event_name: string;
@@ -26,6 +34,12 @@ interface SalesSummary {
   credit_card_sales: number;
   cash_sales: number;
   total_sales: number;
+}
+
+// Add new interface for available dates
+interface EventDate {
+  date: string;
+  formatted: string;
 }
 
 function trimEventName(eventName: string): string {
@@ -39,8 +53,59 @@ export function SalesSummaryCard() {
   const [salesSummary, setSalesSummary] = useState<SalesSummary[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [availableDates, setAvailableDates] = useState<EventDate[]>([]);
+  const [selectedDate, setSelectedDate] = useState<string>("");
 
+  // Fetch available dates
   useEffect(() => {
+    async function fetchDates() {
+      const supabase = createClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+      );
+
+      try {
+        const { data, error } = await supabase
+          .from("flicks")
+          .select("start_at")
+          .order("start_at", { ascending: false });
+
+        if (error) throw error;
+
+        // Create unique dates array with proper timezone handling
+        const uniqueDatesMap = new Map<string, EventDate>();
+
+        data.forEach((item) => {
+          // Parse the ISO string and format it to YYYY-MM-DD
+          const date = parseISO(item.start_at);
+          const dateKey = format(date, "yyyy-MM-dd");
+
+          if (!uniqueDatesMap.has(dateKey)) {
+            uniqueDatesMap.set(dateKey, {
+              date: dateKey,
+              formatted: format(date, "MMMM d, yyyy"),
+            });
+          }
+        });
+
+        const uniqueDates = Array.from(uniqueDatesMap.values());
+        setAvailableDates(uniqueDates);
+        if (uniqueDates.length > 0) {
+          setSelectedDate(uniqueDates[0].date);
+        }
+      } catch (err) {
+        console.error("Error fetching dates:", err);
+        setError("Failed to fetch dates");
+      }
+    }
+
+    fetchDates();
+  }, []);
+
+  // Fetch sales data for selected date
+  useEffect(() => {
+    if (!selectedDate) return;
+
     const fetchData = async () => {
       setIsLoading(true);
       setError(null);
@@ -51,13 +116,15 @@ export function SalesSummaryCard() {
       );
 
       try {
-        const twentyFourHoursAgo = new Date();
-        twentyFourHoursAgo.setHours(twentyFourHoursAgo.getHours() - 24);
+        // Use a range query to cover the full day in any timezone
+        const startOfDay = `${selectedDate}T00:00:00`;
+        const endOfDay = `${selectedDate}T23:59:59`;
 
         const { data, error } = await supabase
           .from("flicks")
           .select("event_name, quantity, amount, payment_method")
-          .gte("created_at", twentyFourHoursAgo.toISOString());
+          .gte("start_at", startOfDay)
+          .lte("start_at", endOfDay);
 
         if (error) throw error;
 
@@ -101,7 +168,7 @@ export function SalesSummaryCard() {
     };
 
     fetchData();
-  }, []);
+  }, [selectedDate]);
 
   if (isLoading) {
     return (
@@ -148,10 +215,24 @@ export function SalesSummaryCard() {
       <BorderBeam colorFrom="#000000" colorTo="#000000" />
       <Card className="w-full mx-auto">
         <CardHeader>
-          <CardTitle>Last 24 Hours Sales Summary</CardTitle>
-          <CardDescription>
-            Summary of sales from the past 24 hours
-          </CardDescription>
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle>Sales Summary</CardTitle>
+              <CardDescription>Summary of sales by event date</CardDescription>
+            </div>
+            <Select value={selectedDate} onValueChange={setSelectedDate}>
+              <SelectTrigger className="w-[240px]">
+                <SelectValue placeholder="Select date" />
+              </SelectTrigger>
+              <SelectContent>
+                {availableDates.map((date) => (
+                  <SelectItem key={date.date} value={date.date}>
+                    {date.formatted}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
         </CardHeader>
         <CardContent>
           <Table>

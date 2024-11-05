@@ -30,6 +30,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
         "event_name",
         "created_at",
         "payment_method",
+        "start_at",
       ];
       const missingFields = requiredFields.filter((field) => !(field in body));
       if (missingFields.length > 0) {
