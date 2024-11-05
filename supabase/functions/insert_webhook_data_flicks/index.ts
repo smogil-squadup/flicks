@@ -1,4 +1,4 @@
-// File: insert_webhook_dataelysian/index.ts
+// File: insert_webhook_data_flicks/index.ts
 
 // @ts-ignore: Deno compatibility
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2"; // Using esm.sh for Deno compatibility
@@ -79,10 +79,10 @@ Deno.serve(async (req: Request): Promise<Response> => {
         JSON.stringify(transformedData, null, 2),
       );
 
-      // Insert data into the elysian table
-      console.log("Attempting to insert data into elysian table");
+      // Insert data into the flicks table
+      console.log("Attempting to insert data into flicks table");
       const { data, error } = await supabase
-        .from("elysian")
+        .from("flicks")
         .insert([transformedData])
         .select();
 

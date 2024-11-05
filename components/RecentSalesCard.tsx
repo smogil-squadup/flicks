@@ -51,7 +51,7 @@ export function RecentSalesCard() {
 
       try {
         const { data, error } = await supabase
-          .from("elysian")
+          .from("flicks")
           .select("quantity, amount, created_at, event_name, payment_method")
           .order("created_at", { ascending: false })
           .limit(5);

@@ -54,7 +54,7 @@ export function TicketSalesLineChart() {
 
       try {
         const { data, error } = await supabase
-          .from("elysian")
+          .from("flicks")
           .select("created_at, amount")
           .gte("created_at", twentyFourHoursAgo.toISOString())
           .order("created_at", { ascending: true });

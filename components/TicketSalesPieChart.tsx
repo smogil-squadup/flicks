@@ -51,7 +51,7 @@ export function TicketSalesPieChart() {
 
       try {
         const { data, error } = await supabase
-          .from("elysian")
+          .from("flicks")
           .select("event_name, quantity")
           .gte("created_at", twentyFourHoursAgo.toISOString());
 

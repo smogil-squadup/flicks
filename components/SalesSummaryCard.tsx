@@ -55,7 +55,7 @@ export function SalesSummaryCard() {
         twentyFourHoursAgo.setHours(twentyFourHoursAgo.getHours() - 24);
 
         const { data, error } = await supabase
-          .from("elysian")
+          .from("flicks")
           .select("event_name, quantity, amount, payment_method")
           .gte("created_at", twentyFourHoursAgo.toISOString());
 
@@ -145,7 +145,7 @@ export function SalesSummaryCard() {
 
   return (
     <div className="relative w-full rounded-lg">
-      <BorderBeam size={500} colorFrom="#000000" colorTo="#000000" />
+      <BorderBeam colorFrom="#000000" colorTo="#000000" />
       <Card className="w-full mx-auto">
         <CardHeader>
           <CardTitle>Last 24 Hours Sales Summary</CardTitle>

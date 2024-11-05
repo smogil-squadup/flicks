@@ -8,19 +8,19 @@ import { SalesSummaryCard } from "@/components/SalesSummaryCard";
 
 export default function Home() {
   return (
-    <main className="flex min-h-screen flex-col items-center p-4 md:p-24">
+    <main className="flex min-h-screen flex-col items-center p-4 md:p-8">
       <div className="flex flex-col items-center mb-8">
         <Image
-          src="/logo.png"
-          alt="Elysian Logo"
+          src="/logo.jpg"
+          alt="Flicks Logo"
           width={600}
           height={240}
           priority
           className="mb-4"
         />
-        <h1 className="text-3xl md:text-5xl font-extrabold mb-8 md:mb-16 text-center tracking-tight">
+        {/* <h1 className="text-3xl md:text-5xl font-extrabold mb-8 md:mb-16 text-center tracking-tight">
           Box Office Dashboard
-        </h1>
+        </h1> */}
       </div>
       <div className="w-full flex flex-col gap-4 md:gap-6">
         <SalesSummaryCard />
